@@ -12,6 +12,8 @@
 -(void)viewDidAttach
 {
     [(TiStyledlabelLabel*)[self view] createView];
+    [(TiStyledlabelLabel*)[self view] setBackgroundColor:[UIColor clearColor]];
+    [(TiStyledlabelLabel*)[self view] setOpaque:NO];
 }
 
 // The following is to support the new layout in TiSDK
