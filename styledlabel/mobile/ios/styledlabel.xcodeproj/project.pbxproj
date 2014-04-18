@@ -264,7 +264,7 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				TITANIUM_SDK = "/Users/ehouriga/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
+				TITANIUM_SDK = "/Users/mshields/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
 				TITANIUM_SDK_VERSION = 3.2.0.GA;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -301,7 +301,7 @@
 				PRODUCT_NAME = TiStyledlabel;
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				TITANIUM_SDK = "/Users/ehouriga/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
+				TITANIUM_SDK = "/Users/mshields/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
 				TITANIUM_SDK_VERSION = 3.2.0.GA;
 				USER_HEADER_SEARCH_PATHS = "";
 			};

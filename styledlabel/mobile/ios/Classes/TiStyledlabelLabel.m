@@ -12,6 +12,9 @@
 @interface TiStyledlabelLabel (Private)
 
 -(void)updateTextViewsHtml;
+-(void)keyboardWillShow:(NSNotification*)notification;
+-(void)keyboardWillHide:(NSNotification*)notification;
+
 
 @end
 
@@ -22,6 +25,9 @@
 
 - (id)init {
 	if ((self = [super init])) {
+        NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+        [nc addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+        [nc addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
 	}
 	return self;
 }
@@ -30,6 +36,9 @@
 {
     RELEASE_TO_NIL(_html);
     RELEASE_TO_NIL(_web);
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    [nc removeObserver:self name:UIKeyboardWillShowNotification object:nil];
 	[super dealloc];
 }
 
@@ -51,10 +60,13 @@
             [v setScrollEnabled:NO];
         }
         _web.delegate = self;
+        _web.scrollView.delegate = self;
+        [_web.scrollView setScrollEnabled:NO];
+        
         [self addSubview:_web];
-        singleTap = [[UIGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureCaptured:)];
-        [[self web].scrollView addGestureRecognizer:singleTap];
-         NSLog(@"ya set tap 0 agin");
+//        singleTap = [[UIGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureCaptured:)];
+//        [[self web].scrollView addGestureRecognizer:singleTap];
+//         NSLog(@"ya set tap 0 agin");
     }
     [_web setBackgroundColor:[UIColor clearColor]];
     [_web setOpaque:NO];
@@ -109,14 +121,15 @@
     _html = [[NSString stringWithFormat:@"%@%@%@", head, html, onload] retain];
 
     [[self web] loadHTMLString:_html baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]]];
-    [self web].scrollView.scrollEnabled = NO;
-    [self web].scrollView.delegate= self;
     
-    singleTap = [[UIGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureCaptured:)];
-    [[self web].scrollView addGestureRecognizer:singleTap];
-    NSLog(@"set tap 1 again");
-
-
+    [self web].scrollView.scrollEnabled = NO;
+    [self web].scrollView.delegate = self;
+    
+//    singleTap = [[UIGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureCaptured:)];
+//    [[self web].scrollView addGestureRecognizer:singleTap];
+//    NSLog(@"set tap 1 again");
+//
+//
 }
 
 #pragma mark -
@@ -125,6 +138,7 @@
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
     NSURL *url = [request URL];
+    NSLog(@"load request with navtype: %d and scheme: %@", navigationType, [url scheme]);
     if (navigationType == UIWebViewNavigationTypeOther) {
         if ([[url scheme] isEqualToString:@"ready"]) {
             _contentHeight = [[url host] floatValue];
@@ -136,12 +150,18 @@
         } else if ([[url scheme] isEqualToString:@"blankify"]) {
             [[self proxy] fireEvent:@"blankify.answer.updated" withObject:[[NSDictionary alloc] initWithObjectsAndKeys:[url host], @"data", nil]];
             return NO;
+        } else if ([[url scheme] isEqualToString:@"selected"]) {
+            [[self proxy] fireEvent:@"blankify.answer.selected" withObject:[[NSDictionary alloc] initWithObjectsAndKeys:[url host], @"data", nil]];
+            return NO;
         }
     }
+//
+//    [self.proxy fireEvent:@"click" withObject:[[NSDictionary alloc] initWithObjectsAndKeys:
+//                                               [url absoluteString], @"url",
+//                                               nil]];
     
-    [self.proxy fireEvent:@"click" withObject:[[NSDictionary alloc] initWithObjectsAndKeys:
-                                               [url absoluteString], @"url",
-                                               nil]];}
+    return YES;
+}
 
 - (void)webViewDidStartLoad:(UIWebView *)webView
 {
@@ -156,30 +176,80 @@
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-    NSLog(@"in og");
-    og = scrollView.bounds.origin.y;
-    NSLog(@"og is: %f", og);
+//    NSLog(@"in og");
+//    og = scrollView.bounds.origin.y;
+//    NSLog(@"og is: %f", og);
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    //CGFloat z = [self web].bounds.origin.y - scrollView.bounds.origin.y;
-    NSLog(@"sv origin %f", scrollView.bounds.origin.y);
-    NSLog(@"sv height %f", scrollView.bounds.size.height);
-    CGFloat z = scrollView.contentOffset.y;
-    [[self proxy] fireEvent:@"ui.scroll.wv" withObject:[[NSDictionary alloc] initWithObjectsAndKeys:[NSString stringWithFormat:@"%f", z] , @"data", nil]];
+//    CGFloat z = [self web].bounds.origin.y - scrollView.bounds.origin.y;
+//    NSLog(@"sv origin %f", scrollView.bounds.origin.y);
+//    NSLog(@"sv height %f", scrollView.bounds.size.height);
+//    CGFloat z = scrollView.contentOffset.y;
+//    [[self proxy] fireEvent:@"ti.styledlabel.webview.scroll" withObject:[[NSDictionary alloc] initWithObjectsAndKeys:[NSString stringWithFormat:@"%f", z] , @"offset", nil]];
+    [scrollView setContentOffset:CGPointMake(0, 0) animated:NO];
     scrollView.bounds = [self web].bounds;
 }
 
 - (void)singleTapGestureCaptured:(UIGestureRecognizer *)gesture
 {
-    NSLog(@"tap registered");
-    CGPoint touchPoint=[gesture locationInView:[self web].scrollView];
-    NSLog(@"here is touchpt %f", touchPoint.y);
+//    NSLog(@"tap registered");
+//    CGPoint touchPoint=[gesture locationInView:[self web].scrollView];
+//    NSLog(@"here is touchpt %f", touchPoint.y);
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch{
-    NSLog(@"should reg");
-    if([touch.view isKindOfClass:[UIScrollView class]]) return YES; else return NO;
+//    NSLog(@"should reg");
+//    if([touch.view isKindOfClass:[UIScrollView class]]) return YES; else return NO;
+}
+
+- (void)keyboardWillShow:(NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+    
+    NSValue *beginFrameValue = userInfo[UIKeyboardFrameBeginUserInfoKey];
+    CGRect keyboardBeginFrame = [self.web convertRect:beginFrameValue.CGRectValue fromView:nil];
+    
+    NSValue *endFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardEndFrame = [self.web convertRect:endFrameValue.CGRectValue fromView:nil];
+    
+    NSNumber *durationValue = userInfo[UIKeyboardAnimationDurationUserInfoKey];
+    NSNumber *curveValue = userInfo[UIKeyboardAnimationCurveUserInfoKey];
+    NSTimeInterval animationDuration = durationValue.doubleValue;
+    UIViewAnimationCurve animationCurve = curveValue.intValue;
+    
+    [[self proxy] fireEvent:@"ti.styledlabel.keyboard.will.show" withObject:[[NSDictionary alloc]
+                                                                             initWithObjectsAndKeys:curveValue, @"curveValue",
+                                                                             durationValue, @"durationValue",
+                                                                             [NSNumber numberWithFloat:beginFrameValue.CGRectValue.origin.y], @"beginFrameValue_origin_y",
+                                                                             [NSNumber numberWithFloat:endFrameValue.CGRectValue.origin.y], @"endFrameValue_origin_y",
+                                                                             [NSNumber numberWithFloat:keyboardBeginFrame.origin.y], @"keyboardBeginFrame_origin_y",
+                                                                             [NSNumber numberWithFloat:keyboardEndFrame.origin.y], @"keyboardEndFrame_origin_y",                                                                                                    nil]];
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+
+    NSValue *beginFrameValue = userInfo[UIKeyboardFrameBeginUserInfoKey];
+    CGRect keyboardBeginFrame = [self.web convertRect:beginFrameValue.CGRectValue fromView:nil];
+    
+    NSValue *endFrameValue = userInfo[UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardEndFrame = [self.web convertRect:endFrameValue.CGRectValue fromView:nil];
+
+    NSNumber *durationValue = userInfo[UIKeyboardAnimationDurationUserInfoKey];
+    NSNumber *curveValue = userInfo[UIKeyboardAnimationCurveUserInfoKey];
+    NSTimeInterval animationDuration = durationValue.doubleValue;
+    UIViewAnimationCurve animationCurve = curveValue.intValue;
+    
+    [[self proxy] fireEvent:@"ti.styledlabel.keyboard.will.hide" withObject:[[NSDictionary alloc]
+                                                                             initWithObjectsAndKeys:curveValue, @"curveValue",
+                                                                             durationValue, @"durationValue",
+                                                                             [NSNumber numberWithFloat:beginFrameValue.CGRectValue.origin.y], @"beginFrameValue_origin_y",
+                                                                             [NSNumber numberWithFloat:endFrameValue.CGRectValue.origin.y], @"endFrameValue_origin_y",
+                                                                             [NSNumber numberWithFloat:keyboardBeginFrame.origin.y], @"keyboardBeginFrame_origin_y",
+                                                                             [NSNumber numberWithFloat:keyboardEndFrame.origin.y], @"keyboardEndFrame_origin_y",
+                                                                                                    nil]];
 }
 
 

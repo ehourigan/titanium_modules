@@ -10,8 +10,8 @@
     UIWebView* _web;
     NSString* _html;
     float _contentHeight;
-    UIGestureRecognizer *singleTap;
-    CGFloat og;
+//    UIGestureRecognizer *singleTap;
+//    CGFloat og;
 }
 
 -(void)setHtml_:(NSString *)html;
