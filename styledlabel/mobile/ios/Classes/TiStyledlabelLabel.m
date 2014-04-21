@@ -64,9 +64,7 @@
         [_web.scrollView setScrollEnabled:NO];
         
         [self addSubview:_web];
-//        singleTap = [[UIGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureCaptured:)];
-//        [[self web].scrollView addGestureRecognizer:singleTap];
-//         NSLog(@"ya set tap 0 agin");
+
     }
     [_web setBackgroundColor:[UIColor clearColor]];
     [_web setOpaque:NO];
@@ -125,11 +123,6 @@
     [self web].scrollView.scrollEnabled = NO;
     [self web].scrollView.delegate = self;
     
-//    singleTap = [[UIGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureCaptured:)];
-//    [[self web].scrollView addGestureRecognizer:singleTap];
-//    NSLog(@"set tap 1 again");
-//
-//
 }
 
 #pragma mark -
@@ -155,10 +148,6 @@
             return NO;
         }
     }
-//
-//    [self.proxy fireEvent:@"click" withObject:[[NSDictionary alloc] initWithObjectsAndKeys:
-//                                               [url absoluteString], @"url",
-//                                               nil]];
     
     return YES;
 }
@@ -176,31 +165,22 @@
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-//    NSLog(@"in og");
-//    og = scrollView.bounds.origin.y;
-//    NSLog(@"og is: %f", og);
+
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-//    CGFloat z = [self web].bounds.origin.y - scrollView.bounds.origin.y;
-//    NSLog(@"sv origin %f", scrollView.bounds.origin.y);
-//    NSLog(@"sv height %f", scrollView.bounds.size.height);
-//    CGFloat z = scrollView.contentOffset.y;
-//    [[self proxy] fireEvent:@"ti.styledlabel.webview.scroll" withObject:[[NSDictionary alloc] initWithObjectsAndKeys:[NSString stringWithFormat:@"%f", z] , @"offset", nil]];
+
     [scrollView setContentOffset:CGPointMake(0, 0) animated:NO];
     scrollView.bounds = [self web].bounds;
 }
 
 - (void)singleTapGestureCaptured:(UIGestureRecognizer *)gesture
 {
-//    NSLog(@"tap registered");
-//    CGPoint touchPoint=[gesture locationInView:[self web].scrollView];
-//    NSLog(@"here is touchpt %f", touchPoint.y);
+
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch{
-//    NSLog(@"should reg");
-//    if([touch.view isKindOfClass:[UIScrollView class]]) return YES; else return NO;
+
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification

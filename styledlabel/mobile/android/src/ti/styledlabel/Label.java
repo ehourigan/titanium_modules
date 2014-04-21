@@ -57,6 +57,12 @@ public class Label extends TiUIView {
 					pr.fireEvent("blankify.answer.updated", hashMap);
 					return true;
 				}
+				else if(url.startsWith("selected://")) {
+					HashMap<String, String> hashMap= new HashMap<String, String>();
+					hashMap.put("data", url.replaceAll("selected://", ""));
+					pr.fireEvent("blankify.answer.selected", hashMap);
+					return true;
+				}
 			    return false; 
 			}
 		});
