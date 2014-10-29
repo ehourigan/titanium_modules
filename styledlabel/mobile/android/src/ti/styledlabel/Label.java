@@ -46,6 +46,7 @@ public class Label extends TiUIView {
 		webview.getSettings().setJavaScriptEnabled(true);
 		webview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
 		webview.getSettings().setAllowContentAccess(true);
+		webview.setDrawingCacheEnabled(false);
 		webview.setBackgroundColor(0x00000000);
 		pr = proxy;
 		webview.setWebViewClient(new WebViewClient(){
@@ -102,12 +103,12 @@ public class Label extends TiUIView {
 	});
 
   	private void updateText(final String html)
-  	{
-  	    if (!TiApplication.isUIThread()) {
-  	        TiMessenger.sendBlockingMainMessage(handler.obtainMessage(MSG_UPDATE_TEXT), html);
-  	    } else {
-  	        handleUpdateText(html);
-  	    }
+  	{handleUpdateText(html);
+//  	    if (!TiApplication.isUIThread()) {
+//  	        TiMessenger.sendBlockingMainMessage(handler.obtainMessage(MSG_UPDATE_TEXT), html);
+//  	    } else {
+//  	        handleUpdateText(html);
+//  	    }
   	}
 
   	
