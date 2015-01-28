@@ -108,10 +108,10 @@
 -(void)setHtml_:(NSString *)html
 {
     NSString* head =
-    @"<meta name=viewport content=\"user-scalable=0\" /><style type=text/css>body{ margin: 0; padding: 0 }</style>";
+    @"<meta name=viewport content=\"user-scalable=0\" /><style type=text/css>body{ margin: 0; }</style>";
     
     NSString* onload =
-    @"<br clear=all/><script type=text/javascript>\
+    @"<script type=text/javascript>\
     window.onload = function() { window.location.href = 'ready://' + document.body.offsetHeight; };\
     </script>";
     
