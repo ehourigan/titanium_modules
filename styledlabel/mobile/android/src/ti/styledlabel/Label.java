@@ -6,11 +6,14 @@
 
 package ti.styledlabel;
 
+import java.util.HashMap;
+
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.view.TiUIView;
 import org.ccil.cowan.tagsoup.Parser;
+import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.kroll.common.AsyncResult;
 
@@ -22,6 +25,8 @@ import ti.styledlabel.parsing.HtmlToSpannedConverter;
 import android.graphics.Color;
 import android.text.InputType;
 import android.view.Gravity;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.os.Handler;
 import android.os.Message;
@@ -32,18 +37,37 @@ public class Label extends TiUIView {
 	private String _html;
 	private String[] _filteredTags;
 	private int _filterTagsMode = -1;
+	private TiViewProxy pr;
 
 	public Label(TiViewProxy proxy) {
 		super(proxy);
-		TextView textView = new TextView(TiApplication.getAppCurrentActivity());
-		textView.setMovementMethod(new CustomLinkMovementMethod(proxy));
-		textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
-		textView.setPadding(0, 0, 0, 0);
-		textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-		textView.setKeyListener(null);
-		textView.setTextColor(Color.BLACK);
-		textView.setFocusable(false);
-		setNativeView(textView);
+
+		WebView webview = new WebView(TiApplication.getAppCurrentActivity().getApplicationContext());
+		webview.getSettings().setJavaScriptEnabled(true);
+		webview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+		webview.getSettings().setAllowContentAccess(true);
+		webview.setDrawingCacheEnabled(false);
+		webview.setBackgroundColor(0x00000000);
+		pr = proxy;
+		webview.setWebViewClient(new WebViewClient(){
+			@Override
+			public boolean shouldOverrideUrlLoading(WebView view, String url){
+				if(url.startsWith("blankify://")) {
+					HashMap<String, String> hashMap= new HashMap<String, String>();
+					hashMap.put("data", url.replaceAll("blankify://", ""));
+					pr.fireEvent("blankify.answer.updated", hashMap);
+					return true;
+				}
+				else if(url.startsWith("selected://")) {
+					HashMap<String, String> hashMap= new HashMap<String, String>();
+					hashMap.put("data", url.replaceAll("selected://", ""));
+					pr.fireEvent("blankify.answer.selected", hashMap);
+					return true;
+				}
+			    return false; 
+			}
+		});
+		setNativeView(webview);
 	}
 
 	@Override
@@ -62,14 +86,14 @@ public class Label extends TiUIView {
 
     private static final int MSG_UPDATE_TEXT = 50000;
 
-	private final Handler handler = new Handler(TiMessenger.getMainMessenger().getLooper(), new Handler.Callback ()
+    private final Handler handler = new Handler(TiMessenger.getMainMessenger().getLooper(), new Handler.Callback ()
 	{
     	public boolean handleMessage(Message msg)
         {
             switch (msg.what) {
                 case MSG_UPDATE_TEXT: {
                     AsyncResult result = (AsyncResult) msg.obj;
-                    handleUpdateText((Spanned) result.getArg());
+                    handleUpdateText((String) result.getArg());
                     result.setResult(null);
                     return true;
                 }
@@ -78,21 +102,21 @@ public class Label extends TiUIView {
         }
 	});
 
-	private void updateText(final Spanned text)
-	{
-	    if (!TiApplication.isUIThread()) {
-	        TiMessenger.sendBlockingMainMessage(handler.obtainMessage(MSG_UPDATE_TEXT), text);
-	    } else {
-	        handleUpdateText(text);
-	    }
-	}
+  	private void updateText(final String html)
+  	{handleUpdateText(html);
+//  	    if (!TiApplication.isUIThread()) {
+//  	        TiMessenger.sendBlockingMainMessage(handler.obtainMessage(MSG_UPDATE_TEXT), html);
+//  	    } else {
+//  	        handleUpdateText(html);
+//  	    }
+  	}
 
-	private void handleUpdateText(final Spanned text)
-	{
-	    TextView textView = (TextView) getNativeView();
-	    textView.setText(text);
-	    textView.invalidate();
-	}
+  	
+  	private void handleUpdateText(final String html){
+  		WebView webview = (WebView) getNativeView();
+  		webview.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+
+  	}
 
 	public void setHtml(String html) {
 		_html = html;
@@ -107,11 +131,8 @@ public class Label extends TiUIView {
 			throw new RuntimeException(e);
 		}
 
-		HtmlToSpannedConverter converter = new HtmlToSpannedConverter(html, new CustomImageGetter(proxy), parser);
-		converter.setFilteredTags(_filteredTags);
-		converter.setFilteredTagsMode(_filterTagsMode);
 
-        updateText(converter.convert());
+        updateText(_html);
 	}
 
 	public void setFilteredTags(String[] tags) {

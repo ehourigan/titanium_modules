@@ -7,6 +7,7 @@
 package ti.styledlabel;
 
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.view.TiUIView;
 
@@ -29,9 +30,12 @@ public class LabelProxy extends TiViewProxy {
 	@Override
 	public boolean fireEvent(String event, Object args) {
 		// Suppress click events that didn't come from us (no "url" property).
+		Log.e("TL SL", "touch event fired");
     	if (event.equals("click") &&
     	    (args instanceof HashMap) &&
     	    !((HashMap)args).containsKey("url")) {
+    		
+    		Log.e("TL SL", "returning false");
 			return false;
 		}
 		return super.fireEvent(event, args);
